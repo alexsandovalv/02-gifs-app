@@ -9,45 +9,72 @@ export class GifsService {
 
   private apiKey     : string = 'vlF3AZ8OaY4Nb4iP6Gd9fjINntDuRfdQ';
   private url        : string = 'https://api.giphy.com/v1/gifs';
-  private _historial : string[] = [];
+  private _tagHistory: string[] = [];
 
   //TODO cambiar el tipo de resultado
-  public resultados  : Gif[] = [];
+  public gifList  : Gif[] = [];
 
-  get historial(){
-    return [...this._historial];
+  get tagHistory(){
+    return [...this._tagHistory];
   }
 
   constructor(private http:HttpClient ) {
-    this._historial = JSON.parse(localStorage.getItem('historial')!) || [];
-    this.resultados = JSON.parse(localStorage.getItem('resultados')!) || [];
+    this.loadLocalStorage()
+    //this.gifList = JSON.parse(localStorage.getItem('resultados')!) || [];
     /*if( localStorage.getItem('historial') ){
       this._historial = JSON.parse(localStorage.getItem('historial')!);
     }*/
 
   }
 
-  buscarGifs( query: string){
-
-    query = query.trim().toLowerCase();
-
-    if( !this._historial.includes( query )){
-      this._historial.unshift(query);
-      this._historial = this._historial.splice(0, 10);
-
-      localStorage.setItem('historial', JSON.stringify(this._historial));
+  private organizeHistory( tag: string ){
+    tag = tag.toLowerCase();
+    if( this._tagHistory.includes(tag)){
+      this._tagHistory = this._tagHistory.filter( (oldTag) => oldTag !== tag );
     }
+    this._tagHistory.unshift( tag );
+    this._tagHistory = this._tagHistory.splice(0, 10);
+    this.saveLocalStorage();
+  }
 
-    console.log(this._historial)
+  private saveLocalStorage(){
+    localStorage.setItem('history', JSON.stringify(this._tagHistory));
+  }
+
+  private loadLocalStorage(){
+    if( !localStorage.getItem('history') ){
+      return;
+    }
+    this._tagHistory = JSON.parse(localStorage.getItem('history')! );
+
+    if( this._tagHistory.length == 0)
+      return;
+
+    this.searchTag( this._tagHistory[0] );
+  }
+
+  searchTag( tag: string){
+
+    tag = tag.trim().toLowerCase();
+    this.organizeHistory( tag );
+    /*
+    if( !this._tagHistory.includes( tag )){
+      this._tagHistory.unshift( tag );
+      this._tagHistory = this._tagHistory.splice(0, 10);
+
+      localStorage.setItem('historial', JSON.stringify(this._tagHistory));
+    }
+    */
+
+    console.log(this._tagHistory)
     const params = new HttpParams()
         .set('api_key', this.apiKey)
-        .set('limit', 10)
-        .set('q', query);
+        .set('limit', 12)
+        .set('q',  tag);
     this.http.get<SearchGifsResponse>(`${ this.url }/search`, { params })
       .subscribe( (resp) => {
-        console.log( resp.data );
-        this.resultados = resp.data;
-        localStorage.setItem('resultados', JSON.stringify(resp.data));
+        //console.log( resp.data );
+        this.gifList = resp.data;
       });
   }
 

@@ -2,23 +2,23 @@ import {Component, ElementRef, ViewChild} from '@angular/core';
 import {GifsService} from "../services/gifs.service";
 
 @Component({
-  selector: 'app-busqueda',
+  selector: 'gifs-search-box',
   templateUrl: './busqueda.component.html',
   styles: [
   ]
 })
 export class BusquedaComponent {
 
-  @ViewChild('txtBbuscar') txtBuscar!:ElementRef<HTMLInputElement>;
+  @ViewChild('txtTagInput') tagInput!:ElementRef<HTMLInputElement>;
 
   constructor( private gifService: GifsService) {
   }
-  buscar(  ){
+  searchTag(  ){
 
-    const valor = this.txtBuscar.nativeElement.value;
-    if( valor.trim().length == 0) return;
+    const newTag = this.tagInput.nativeElement.value;
+    if( newTag.trim().length == 0) return;
 
-    this.gifService.buscarGifs(valor);
-    this.txtBuscar.nativeElement.value = '';
+    this.gifService.searchTag(newTag);
+    this.tagInput.nativeElement.value = '';
   }
 }
